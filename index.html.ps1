@@ -378,6 +378,8 @@ $index = @(
     }
     "</script>"
     
+    if (-not $NoHighlight) { "<script>hljs.highlightAll();</script>" }
+    
     # Close out the page.
     "</body>"
     "</html>"
