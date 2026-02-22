@@ -45,7 +45,11 @@ $DefaultPalette = $(
 
 # If set, will not render the build time.
 [switch]
-$NoBuildTime
+$NoBuildTime,
+
+# If set, will not highlight content.
+[switch]
+$NoHighlight
 )
 
 #region Collect Information
@@ -228,7 +232,7 @@ foreach ($repoInfo in $script:OrgProjects | Sort-Object stargazers_count -Descen
     "<div $attributeString>"
         "<h2><a href='$($repoInfo.html_url)'>$($repoInfo.Name)</a></h2>"
         "<p>$([Web.HttpUtility]::HtmlEncode($repoInfo.Description))</p>"
-        "<p>★ $($repoInfo.stargazers_count) | ⑃ forks: $($repoInfo.forks_count) | ⏿ watchers: $($repoInfo.watchers_count) | ☑ issues: $($repoInfo.open_issues_count)</p>"
+        "<p>★ $($repoInfo.stargazers_count) | ⑃ forks: $($repoInfo.forks_count) | ☑ issues: $($repoInfo.open_issues_count)</p>"
         "<p>Created: $($repoInfo.created_at.ToString('yyyy-MM-dd')) | Updated: $($repoInfo.updated_at.ToString('yyyy-MM-dd'))</p>"
     "</div>"
 }
@@ -321,17 +325,27 @@ $index = @(
     
     # Make sure we set the viewport so things work on mobile.
     "<meta name='viewport' content='width=device-width, initial-scale=1, minimum-scale=1.0' />"
+    
 
     # Propagate the title, description, and image into OpenGraph attributes
 
     "<meta property='og:title' content='$([Web.HttpUtility]::HtmlAttributeEncode($orgInfo.name))' />"
-    "<meta property='og:description' content='$([Web.HttpUtility]::HtmlAttributeEncode($orgInfo.description))' />"
-    "<meta property='og:image' content='$($orgInfo.avatar_url)' />"
+    if ($orgInfo.description) {
+        "<meta property='og:description' content='$([Web.HttpUtility]::HtmlAttributeEncode($orgInfo.description))' />"
+    }    
+    if ($orgInfo.avatar_url) {
+        "<meta property='og:image' content='$($orgInfo.avatar_url)' />"
+    }
+    
 
     if ($DefaultPalette) {
         "<link rel='stylesheet' id='palette' href='$("$PaletteCDN" + $DefaultPalette + '.css')'> "
     }
-    
+
+    if (-not $NoHighlight) {
+        "<script src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@latest/build/highlight.min.js'></script>"
+        "<script src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@latest/build/powershell.min.js'></script>"
+    }
 
     # Declare any styles in the header
     "<style>"
@@ -379,6 +393,6 @@ $index -replace '\$buildTime',
         [Xml.XmlConvert]::ToString($end - $start)
     )'>$(
         ($end - $start)
-    )</time>" > ./index.html
+    )</time>"
 
 Pop-Location
