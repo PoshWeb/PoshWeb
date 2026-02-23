@@ -15,6 +15,14 @@ param(
     }
 ),
 
+[uri]$PageUrl = $(
+    if ($env:page_url) {
+        $env:page_url
+    } else {
+        "https://poshweb.org/"
+    }
+),
+
 # The location of a list of color palettes.
 [uri]
 $PaletteListSource = 'https://4bitcss.com/Palette-List.json',
@@ -433,6 +441,59 @@ $script:orgInfo |
     ConvertTo-Json -Depth 5 > "./$($orgInfo.name).json"
 $script:OrgProjects | 
     ConvertTo-Json -Depth 5 > "./$($orgInfo.name).projects.json"
+
+$countUrl = "$($PageUrl -replace '/$')/$($orgInfo.name).counts.json"
+
+$previousCounts = try {
+    Invoke-RestMethod -Uri $countUrl -ErrorAction Stop
+} catch {
+    Write-Warning "Could not get $countUrl : $_"
+}
+
+
+# Create a table to store stargazers
+$stargazers = [Ordered]@{}
+
+$stargazersUrl = "$($PageUrl -replace '/$')/$($orgInfo.name).stargazers.json"
+try {
+    $previousStargazers = Invoke-RestMethod -Uri $stargazersUrl
+    foreach ($prop in $previousStargazers.psobject.properties) {
+        $stargazers[$prop.name] = @($prop.value)
+    }
+} catch {
+    Write-Warning "Unable to get previous stargazers: $_"
+}
+
+foreach ($previousCount in $previousCounts) {
+    $previousStars = $previousCount.stargazers_count
+    $projectInfo = $script:OrgProjects | 
+        Where-Object Name -eq $previousCount.Name
+    $currentStars  = $projectInfo.stargazers_count 
+    if ($currentStars -ne $previousStars -or 
+        -not $stargazers[$projectInfo.Name]) {
+
+        try {
+            $projectStargazers = Invoke-RestMethod "$($projectInfo.stargazers_url)?per_page=100"
+            if (-not $stargazers[$projectInfo.name]) {
+                $stargazers[$projectInfo.name] = @()
+            }            
+            $stargazers[$projectInfo.name] = @(
+                $stargazers[$projectInfo.name]
+                $projectStargazers | 
+                    Select-Object login, id, html_url, avatar_url
+            ) -ne $null | Select-Object -Unique
+            
+        } catch {
+            Write-Warning "Could not get stargazers for $($projectInfo.Name): $_"
+        }
+    }
+}
+
+$stargazers | ConvertTo-Json -Depth 5 > "./$($Organization).stargazers.json"
+
+$script:OrgProjects | 
+    Select-Object name, *count | Measure-Object
+
 $script:OrgProjects | 
     Select-Object name, *count | 
     ConvertTo-Json -Depth 5 > "./$($orgInfo.name).counts.json"
