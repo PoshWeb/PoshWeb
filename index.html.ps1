@@ -471,7 +471,7 @@ foreach ($previousCount in $previousCounts) {
     $currentStars  = $projectInfo.stargazers_count 
     if ($currentStars -ne $previousStars -or 
         -not $stargazers[$projectInfo.Name]) {
-
+        Write-Verbose "Getting Stargazers for $($projectInfo.Name)" -Verbose
         try {
             $projectStargazers = Invoke-RestMethod "$($projectInfo.stargazers_url)?per_page=100"
             if (-not $stargazers[$projectInfo.name]) {
@@ -486,13 +486,12 @@ foreach ($previousCount in $previousCounts) {
         } catch {
             Write-Warning "Could not get stargazers for $($projectInfo.Name): $_"
         }
+    } else {
+        Write-Verbose "No New Stargazers for $($projectInfo.Name)" -Verbose
     }
 }
 
 $stargazers | ConvertTo-Json -Depth 5 > "./$($Organization).stargazers.json"
-
-$script:OrgProjects | 
-    Select-Object name, *count | Measure-Object
 
 $script:OrgProjects | 
     Select-Object name, *count | 
