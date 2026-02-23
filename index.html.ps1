@@ -288,7 +288,7 @@ $ViewSource = @{
     html= @"
 <details>
 <summary>View Source</summary>
-<pre><code class='language-PowerShell'>$([Web.HttpUtility]::HtmlEncode($MyInvocation.MyCommand.ScriptBlock))</code></pre>
+<pre><code class='language-powershell'>$([Web.HttpUtility]::HtmlEncode($MyInvocation.MyCommand.ScriptBlock))</code></pre>
 </details>
 "@
 }
@@ -367,13 +367,13 @@ $index = @(
     if ($orgInfo.avatar_url) {
         "<meta property='og:image' content='$($orgInfo.avatar_url)' />"
     }
-    
-
+        
     if ($DefaultPalette) {
         "<link rel='stylesheet' id='palette' href='$("$PaletteCDN" + $DefaultPalette + '.css')'> "
     }
 
-    if (-not $NoHighlight) {
+    if (-not $NoHighlight) {    
+        "<link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@latest/build/styles/default.min.css' id='highlight'>"    
         "<script src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@latest/build/highlight.min.js'></script>"
         "<script src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@latest/build/powershell.min.js'></script>"
     }
@@ -427,6 +427,7 @@ $index -replace '\$buildTime',
     )'>$(
         ($end - $start)
     )</time>"
+
 
 $script:orgInfo | ConvertTo-Json -Depth 5 > "./$($orgInfo.name).json"
 $script:OrgProjects | ConvertTo-Json -Depth 5 > "./$($orgInfo.name).projects.json"
