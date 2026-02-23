@@ -81,6 +81,82 @@ if (-not $script:paletteList) {
     $script:paletteList = Invoke-RestMethod -Uri $PaletteListSource
 }
 
+#region Get Stargazers
+$script:orgInfo | 
+    ConvertTo-Json -Depth 5 > "./$($orgInfo.name).json"
+$script:OrgProjects | 
+    ConvertTo-Json -Depth 5 > "./$($orgInfo.name).projects.json"
+
+$countUrl = "$($PageUrl -replace '/$')/$($orgInfo.name).counts.json"
+
+$previousCounts = try {
+    Invoke-RestMethod -Uri $countUrl -ErrorAction Stop
+} catch {
+    Write-Warning "Could not get $countUrl : $_"
+}
+
+
+# Create a table to store stargazers
+$stargazers = [Ordered]@{}
+
+$stargazersUrl = "$($PageUrl -replace '/$')/$($orgInfo.name).stargazers.json"
+try {
+    $previousStargazers = Invoke-RestMethod -Uri $stargazersUrl
+    foreach ($prop in $previousStargazers.psobject.properties) {
+        $stargazers[$prop.name] = @($prop.value)
+    }
+} catch {
+    Write-Warning "Unable to get previous stargazers: $_"
+}
+
+foreach ($previousCount in $previousCounts) {
+    $previousStars = $previousCount.stargazers_count
+    $projectInfo = $script:OrgProjects | 
+        Where-Object Name -eq $previousCount.Name
+    $currentStars  = $projectInfo.stargazers_count 
+    if ($currentStars -and # If the project has stars
+        (
+            # and the current stargazer count is not the previous count
+            $currentStars -ne $previousStars -or 
+            # or no stargazer information exists
+            -not $stargazers[$projectInfo.Name] -or
+            # or the star count appears incorrect
+            $stargazers[$projectInfo.name].Length -lt $currentStars
+        )
+    ) {
+        Write-Verbose "Getting Stargazers for $($projectInfo.Name)" -Verbose
+        try {
+            $projectStargazers = Invoke-RestMethod "$($projectInfo.stargazers_url)?per_page=100"
+            if (-not $stargazers[$projectInfo.name]) {
+                $stargazers[$projectInfo.name] = @()
+            }
+            $currentStargazers = $stargazers[$projectInfo.name].login
+            $newStargazers = @(
+                $projectStargazers |                    
+                    Select-Object login, id, html_url, avatar_url |
+                    Where-Object login -NotIn $currentStargazers
+            )            
+            
+            if ($newStargazers) {
+                Write-Verbose "New Stargazers for $($projectInfo.Name): $($newStargazers.login)" -Verbose
+                $stargazers[$projectInfo.name] = 
+                    @($newStargazers + $stargazers[$projectInfo.name])
+            }            
+        } catch {
+            Write-Warning "Could not get stargazers for $($projectInfo.Name): $_"
+        }
+    } else {
+        Write-Verbose "No New Stargazers for $($projectInfo.Name)" -Verbose
+    }
+}
+
+$stargazers | ConvertTo-Json -Depth 5 > "./$($Organization).stargazers.json"
+
+$script:OrgProjects | 
+    Select-Object name, *count | 
+    ConvertTo-Json -Depth 5 > "./$($orgInfo.name).counts.json"
+#endregion Get Stargazers
+
 #endregion Collect Information
 Push-Location $PSScriptRoot
 
@@ -212,6 +288,11 @@ $RepoGrid = [Ordered]@{
     font-size: 1.5em; text-align: center
 }
 
+.github-stargazer {
+    width: 5rem;
+    height: 5rem;
+}
+
 .repo-thumbnail { max-width: 100%; height: auto; }
 "@
     html = @(
@@ -255,6 +336,14 @@ foreach ($repoInfo in $script:OrgProjects | Sort-Object stargazers_count -Descen
         "<p>$([Web.HttpUtility]::HtmlEncode($repoInfo.Description))</p>"
         "<p>★ $($repoInfo.stargazers_count) | ⑃ forks: $($repoInfo.forks_count) | ☑ issues: $($repoInfo.open_issues_count)</p>"
         "<p>Created: $($repoInfo.created_at.ToString('yyyy-MM-dd')) | Updated: $($repoInfo.updated_at.ToString('yyyy-MM-dd'))</p>"
+        if ($stargazers -and $stargazers[$repoInfo.Name]) {
+            "<details>"
+            "<summary>Stargazers</summary>"
+            foreach ($stargazer in $stargazers[$repoInfo.name]) {
+                "<img class='github-stargazer' src='$($stargazer.avatar_url)' alt='$($stargazer.login)' />"
+            }
+            "</details>"
+        }
     "</div>"
 }
 "</div>"
@@ -436,79 +525,5 @@ $index -replace '\$buildTime',
         ($end - $start)
     )</time>"
 
-
-$script:orgInfo | 
-    ConvertTo-Json -Depth 5 > "./$($orgInfo.name).json"
-$script:OrgProjects | 
-    ConvertTo-Json -Depth 5 > "./$($orgInfo.name).projects.json"
-
-$countUrl = "$($PageUrl -replace '/$')/$($orgInfo.name).counts.json"
-
-$previousCounts = try {
-    Invoke-RestMethod -Uri $countUrl -ErrorAction Stop
-} catch {
-    Write-Warning "Could not get $countUrl : $_"
-}
-
-
-# Create a table to store stargazers
-$stargazers = [Ordered]@{}
-
-$stargazersUrl = "$($PageUrl -replace '/$')/$($orgInfo.name).stargazers.json"
-try {
-    $previousStargazers = Invoke-RestMethod -Uri $stargazersUrl
-    foreach ($prop in $previousStargazers.psobject.properties) {
-        $stargazers[$prop.name] = @($prop.value)
-    }
-} catch {
-    Write-Warning "Unable to get previous stargazers: $_"
-}
-
-foreach ($previousCount in $previousCounts) {
-    $previousStars = $previousCount.stargazers_count
-    $projectInfo = $script:OrgProjects | 
-        Where-Object Name -eq $previousCount.Name
-    $currentStars  = $projectInfo.stargazers_count 
-    if ($currentStars -and # If the project has stars
-        (
-            # and the current stargazer count is not the previous count
-            $currentStars -ne $previousStars -or 
-            # or no stargazer information exists
-            -not $stargazers[$projectInfo.Name] -or
-            # or the star count appears incorrect
-            $stargazers[$projectInfo.name].Length -lt $currentStars
-        )
-    ) {
-        Write-Verbose "Getting Stargazers for $($projectInfo.Name)" -Verbose
-        try {
-            $projectStargazers = Invoke-RestMethod "$($projectInfo.stargazers_url)?per_page=100"
-            if (-not $stargazers[$projectInfo.name]) {
-                $stargazers[$projectInfo.name] = @()
-            }
-            $currentStargazers = $stargazers[$projectInfo.name].login
-            $newStargazers = @(
-                $projectStargazers |                    
-                    Select-Object login, id, html_url, avatar_url |
-                    Where-Object login -NotIn $currentStargazers
-            )            
-            
-            if ($newStargazers) {
-                Write-Verbose "New Stargazers for $($projectInfo.Name): $($newStargazers.login)" -Verbose
-                $stargazers[$projectInfo.name] = 
-                    @($newStargazers + $stargazers[$projectInfo.name])
-            }            
-        } catch {
-            Write-Warning "Could not get stargazers for $($projectInfo.Name): $_"
-        }
-    } else {
-        Write-Verbose "No New Stargazers for $($projectInfo.Name)" -Verbose
-    }
-}
-
-$stargazers | ConvertTo-Json -Depth 5 > "./$($Organization).stargazers.json"
-
-$script:OrgProjects | 
-    Select-Object name, *count | 
-    ConvertTo-Json -Depth 5 > "./$($orgInfo.name).counts.json"
 
 Pop-Location
