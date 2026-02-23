@@ -340,7 +340,9 @@ foreach ($repoInfo in $script:OrgProjects | Sort-Object stargazers_count -Descen
             "<details>"
             "<summary>Stargazers</summary>"
             foreach ($stargazer in $stargazers[$repoInfo.name]) {
+                "<a href='$($stargazer.html_url)'>"
                 "<img class='github-stargazer' src='$($stargazer.avatar_url)' alt='$($stargazer.login)' />"
+                "</a>"
             }
             "</details>"
         }
