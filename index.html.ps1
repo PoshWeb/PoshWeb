@@ -469,19 +469,27 @@ foreach ($previousCount in $previousCounts) {
     $projectInfo = $script:OrgProjects | 
         Where-Object Name -eq $previousCount.Name
     $currentStars  = $projectInfo.stargazers_count 
-    if ($currentStars -ne $previousStars -or 
-        -not $stargazers[$projectInfo.Name]) {
+    if ($currentStars -and # If the project has stars
+        (
+            # and the current stargazer count is not the previous count
+            $currentStars -ne $previousStars -or 
+            # or no stargazer information exists
+            -not $stargazers[$projectInfo.Name]
+        )
+    ) {
         Write-Verbose "Getting Stargazers for $($projectInfo.Name)" -Verbose
         try {
             $projectStargazers = Invoke-RestMethod "$($projectInfo.stargazers_url)?per_page=100"
             if (-not $stargazers[$projectInfo.name]) {
                 $stargazers[$projectInfo.name] = @()
-            }            
-            $stargazers[$projectInfo.name] = @(
+            }
+            $joinedStargazers = @(
                 $stargazers[$projectInfo.name]
                 $projectStargazers | 
                     Select-Object login, id, html_url, avatar_url
-            ) -ne $null | Select-Object -Unique
+            )            
+            $stargazers[$projectInfo.name] = 
+                $joinedStargazers -ne $null | Select-Object -Unique
             
         } catch {
             Write-Warning "Could not get stargazers for $($projectInfo.Name): $_"
