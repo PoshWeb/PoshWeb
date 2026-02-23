@@ -31,6 +31,7 @@ $SelectPaletteId = 'SelectPalette',
 [string]
 $PaletteId = 'palette',
 
+# The default palette to use
 [string]
 $DefaultPalette = $(
     if ($page.Palette) {
@@ -426,5 +427,8 @@ $index -replace '\$buildTime',
     )'>$(
         ($end - $start)
     )</time>"
+
+$script:orgInfo | ConvertTo-Json -Depth 5 > "./$($orgInfo.name).json"
+$script:OrgProjects | ConvertTo-Json -Depth 5 > "./$($orgInfo.name).projects.json"
 
 Pop-Location
