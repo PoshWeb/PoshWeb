@@ -429,7 +429,12 @@ $index -replace '\$buildTime',
     )</time>"
 
 
-$script:orgInfo | ConvertTo-Json -Depth 5 > "./$($orgInfo.name).json"
-$script:OrgProjects | ConvertTo-Json -Depth 5 > "./$($orgInfo.name).projects.json"
+$script:orgInfo | 
+    ConvertTo-Json -Depth 5 > "./$($orgInfo.name).json"
+$script:OrgProjects | 
+    ConvertTo-Json -Depth 5 > "./$($orgInfo.name).projects.json"
+$script:OrgProjects | 
+    Select-Object name, *count | 
+    ConvertTo-Json -Depth 5 > "./$($orgInfo.name).counts.json"
 
 Pop-Location
