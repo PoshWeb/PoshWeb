@@ -474,7 +474,9 @@ foreach ($previousCount in $previousCounts) {
             # and the current stargazer count is not the previous count
             $currentStars -ne $previousStars -or 
             # or no stargazer information exists
-            -not $stargazers[$projectInfo.Name]
+            -not $stargazers[$projectInfo.Name] -or
+            # or the star count appears incorrect
+            $stargazers[$projectInfo.name].Length -lt $currentStars
         )
     ) {
         Write-Verbose "Getting Stargazers for $($projectInfo.Name)" -Verbose
@@ -485,6 +487,7 @@ foreach ($previousCount in $previousCounts) {
             }
             $joinedStargazers = @(
                 $stargazers[$projectInfo.name]
+            ) + @(
                 $projectStargazers | 
                     Select-Object login, id, html_url, avatar_url
             )            
