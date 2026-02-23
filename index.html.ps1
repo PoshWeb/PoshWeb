@@ -485,15 +485,18 @@ foreach ($previousCount in $previousCounts) {
             if (-not $stargazers[$projectInfo.name]) {
                 $stargazers[$projectInfo.name] = @()
             }
-            $joinedStargazers = @(
-                $stargazers[$projectInfo.name]
-            ) + @(
-                $projectStargazers | 
-                    Select-Object login, id, html_url, avatar_url
+            $currentStargazers = $stargazers[$projectInfo.name].login
+            $newStargazers = @(
+                $projectStargazers |                    
+                    Select-Object login, id, html_url, avatar_url |
+                    Where-Object login -NotIn $currentStargazers
             )            
-            $stargazers[$projectInfo.name] = 
-                $joinedStargazers -ne $null | Select-Object -Unique
             
+            if ($newStargazers) {
+                Write-Verbose "New Stargazers for $($projectInfo.Name): $($newStargazers.login)" -Verbose
+                $stargazers[$projectInfo.name] = 
+                    @($newStargazers + $stargazers[$projectInfo.name])
+            }            
         } catch {
             Write-Warning "Could not get stargazers for $($projectInfo.Name): $_"
         }
