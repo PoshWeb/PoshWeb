@@ -53,6 +53,9 @@ jobs:
         # (in this case, just deploy.ps1)
         run: . "./$env:GITHUB_WORKFLOW.ps1"
         # This approach makes it easier to logically organize workflow scripts.
+        # We will also map the page_url to an environment variable, so our scripts can access it.
+        env:
+          page_url: ${{ steps.deployment.outputs.page_url }}
       - name: Upload artifact
         uses: actions/upload-pages-artifact@main
         with:
