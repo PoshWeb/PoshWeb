@@ -107,10 +107,12 @@ $start = [DateTime]::UtcNow
 #region OrgInfo
 $ShowOrgInfo = @{
     html = @(
+        "<header>"
         "<h1>$([Web.HttpUtility]::HtmlEncode($Organization))</h1>"
         if ($orgInfo.description) {
             "<h2>$([Web.HttpUtility]::HtmlEncode($orgInfo.description))</h2>"    
         }
+        "</header>"
     )
 }
 #endregion OrgInfo
@@ -131,9 +133,7 @@ function SetPalette() {
 }
 "@
     css = @"
-.Select-Palette {
-    text-align: center;
-}
+.Select-Palette {text-align: center; }
 "@
 
     html = @"
@@ -179,6 +179,18 @@ function GetRandomPalette() {
 
 }
 #endregion Get-RandomPalette
+
+#region README
+$readme = @{
+    html = 
+        if (Test-Path "$psScriptRoot/README.md") {
+            "<article>"
+                ConvertFrom-Markdown -LiteralPath "$psScriptRoot/README.md" |
+                    Select-Object -ExpandProperty Html
+            "</article>"
+        }
+}
+#endregion README
 
 #region Repository Grid
 $RepoGrid = [Ordered]@{
@@ -275,7 +287,7 @@ $ViewSource = @{
     html= @"
 <details>
 <summary>View Source</summary>
-<pre><code class='language-powershell'>$([Web.HttpUtility]::HtmlEncode($MyInvocation.MyCommand.ScriptBlock))</code></pre>
+<pre><code class='language-PowerShell'>$([Web.HttpUtility]::HtmlEncode($MyInvocation.MyCommand.ScriptBlock))</code></pre>
 </details>
 "@
 }
@@ -286,7 +298,6 @@ $ViewSource = @{
 $ShowBuildTime = @{
     html = "<h4>Last built in `$buildTime at $([DateTime]::UtcNow.ToString("s")) running @ $cpuSpeed Mhz</h4>"
 }
-
 #endregion ShowBuildTime
 # Put all of the controls in the order we want them to appear
 $Controls = 
@@ -294,6 +305,7 @@ $Controls =
         $ShowOrgInfo        
         $selectPalette
         $GetRandomPalette
+        $readme
         $RepoGrid
         $ViewSource
         if (-not $NoBuildTime) { $ShowBuildTime }
@@ -305,10 +317,28 @@ $Controls =
 # Create the base style for the page
 $style = @(
 
-@'
-body { height: 100vh; max-width: 100vw; margin:0 }
+# CSS rules are just strings, so we can just write them inline.
 
-h1, h2, h3,h4 { text-align: center; }
+# Using a here-string helps:
+<# @'
+...
+'@ #>
+
+@'
+
+body { 
+    height: 100vh; 
+    max-width: 100vw; 
+    margin: 1em
+}
+
+header {
+    h1, h2, h3, h4 {
+        text-align: center;
+    }
+}
+
+
 '@
 
 )
@@ -377,7 +407,7 @@ $index = @(
         }                
     }
     "</script>"
-    
+
     if (-not $NoHighlight) { "<script>hljs.highlightAll();</script>" }
     
     # Close out the page.
