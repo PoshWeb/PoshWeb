@@ -63,11 +63,11 @@ $NoHighlight,
 # The analytics id
 [string]
 $AnalyticsID = $(
-    if ($env:ANALYTICSID) {
-        $env:ANALYTICSID
-    } elseif ($env:ANALYTICS_ID) {
-        $env:ANALYTICS_ID
-    }
+    foreach ($env in Get-ChildItem env:) {
+        if ($env.Name -match 'Analytics_?ID') {
+            $env.Value
+        }
+    }    
 ),
 
 [Alias('Icons')]
