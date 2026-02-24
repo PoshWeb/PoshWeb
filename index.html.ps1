@@ -293,15 +293,24 @@ function GetRandomPalette() {
 #region README
 $readme = @{
     html =
-        @(foreach ($markdownFile in Get-ChildItem -Path "$psScriptRoot" -Filter *.md) {
-            "<details name='topics'>"
-            "<summary>$($markdownFile.Name -replace '/.md')</summary>"
-            "<article>"
-                ConvertFrom-Markdown -LiteralPath $markdownFile.FullName |
-                    Select-Object -ExpandProperty Html
-            "</article>"
-            "</details>"
-        })
+        @(
+            "<section class='topics-grid'>"        
+            foreach ($markdownFile in Get-ChildItem -Path "$psScriptRoot" -Filter *.md) {
+                "<details name='topics'>"
+                "<summary>$($markdownFile.Name -replace '\.md$')</summary>"
+                "<article>"
+                    ConvertFrom-Markdown -LiteralPath $markdownFile.FullName |
+                        Select-Object -ExpandProperty Html
+                "</article>"
+                "</details>"
+            }
+            "</section>"
+        )
+    css = "
+.topics-grid {
+    display: grid; grid-template-rows: auto; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr))
+}
+"        
 }
 #endregion README
 
