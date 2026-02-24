@@ -513,7 +513,7 @@ $index = @(
     if (-not $NoHighlight) {    
         "<link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@latest/build/styles/default.min.css' id='highlight'>"    
         "<script src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@latest/build/highlight.min.js'></script>"
-        "<script src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@latest/build/powershell.min.js'></script>"
+        "<script src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@latest/build/languages/powershell.min.js'></script>"
     }
 
     # Declare any styles in the header
