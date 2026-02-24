@@ -58,8 +58,32 @@ $NoBuildTime,
 
 # If set, will not highlight content.
 [switch]
-$NoHighlight
-)
+$NoHighlight,
+
+# The analytics id
+[string]
+$AnalyticsID = $(
+    if ($env:ANALYTICSID) {
+        $env:ANALYTICSID
+    } elseif ($env:ANALYTICS_ID) {
+        $env:ANALYTICS_ID
+    }
+),
+
+[Alias('Icons')]
+[Collections.IDictionary]
+$Icon = [Ordered]@{
+    "github" = "https://cdn.jsdelivr.net/gh/feathericons/feather@latest/icons/github.svg"
+})
+
+#region Cache Icons
+foreach ($ico in $icon.Keys) {
+    if ($icon[$ico] -as [uri] -and 
+        $icon[$ico] -match '\.svg$') {
+        $icon[$ico] = (Invoke-RestMethod $icon[$ico]).svg.outerXml
+    }
+}
+#endregion Cache Icons
 
 #region Collect Information
 
@@ -450,8 +474,20 @@ $index = @(
 
     "<html>"    
     "<head>"
-    
+
     "<title>$([Web.HttpUtility]::HtmlEncode($Organization))</title>"
+
+    if ($AnalyticsID) {
+        "<!-- Google tag (gtag.js) -->
+        <script async src='https://www.googletagmanager.com/gtag/js?id=$($AnalyticsID)'></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '$($AnalyticsID)');
+        </script>"
+    }
+    
     
     # Make sure we set the viewport so things work on mobile.
     "<meta name='viewport' content='width=device-width, initial-scale=1, minimum-scale=1.0' />"
