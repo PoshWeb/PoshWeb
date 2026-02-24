@@ -56,6 +56,7 @@ jobs:
         # We will also map the page_url to an environment variable, so our scripts can access it.
         env:
           page_url: ${{ steps.deployment.outputs.page_url }}
+          analytics_id: ${{vars.ANALYTICSID}}
       - name: Upload artifact
         uses: actions/upload-pages-artifact@main
         with:

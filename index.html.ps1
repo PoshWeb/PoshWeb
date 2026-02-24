@@ -66,6 +66,7 @@ $AnalyticsID = $(
     foreach ($env in Get-ChildItem env:) {
         if ($env.Name -match 'Analytics_?ID') {
             $env.Value
+            break
         }
     }    
 ),
@@ -486,6 +487,8 @@ $index = @(
             gtag('js', new Date());
             gtag('config', '$($AnalyticsID)');
         </script>"
+    } else {
+        Write-Warning "No Analytics ID found"
     }
     
     
