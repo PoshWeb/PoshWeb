@@ -412,7 +412,7 @@ $ViewSource = @{
     html= @"
 <details>
 <summary>View Source</summary>
-<pre><code class='language-powershell'>$([Web.HttpUtility]::HtmlEncode($MyInvocation.MyCommand.ScriptBlock))</code></pre>
+<pre><code class='language-PowerShell'>$([Web.HttpUtility]::HtmlEncode($MyInvocation.MyCommand.ScriptBlock))</code></pre>
 </details>
 "@
 }
