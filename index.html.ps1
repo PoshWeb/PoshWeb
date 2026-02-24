@@ -77,7 +77,7 @@ $Icon = [Ordered]@{
 })
 
 #region Cache Icons
-foreach ($ico in $icon.Keys) {
+foreach ($ico in @($icon.Keys)) {
     if ($icon[$ico] -as [uri] -and 
         $icon[$ico] -match '\.svg$') {
         $icon[$ico] = (Invoke-RestMethod $icon[$ico]).svg.outerXml
