@@ -292,13 +292,16 @@ function GetRandomPalette() {
 
 #region README
 $readme = @{
-    html = 
-        if (Test-Path "$psScriptRoot/README.md") {
+    html =
+        @(foreach ($markdownFile in Get-ChildItem -Path "$psScriptRoot" -Filter *.md) {
+            "<details name='topics'>"
+            "<summary>$($markdownFile.Name -replace '/.md')</summary>"
             "<article>"
-                ConvertFrom-Markdown -LiteralPath "$psScriptRoot/README.md" |
+                ConvertFrom-Markdown -LiteralPath $markdownFile.FullName |
                     Select-Object -ExpandProperty Html
             "</article>"
-        }
+            "</details>"
+        })
 }
 #endregion README
 
