@@ -249,7 +249,11 @@ $badges = @{
             z-index: 10;
             width: 25vw;
             place-items: center;
+            a {
+                vertical-align: center;
+            }
         }
+        
         '
     )
     html = @(
