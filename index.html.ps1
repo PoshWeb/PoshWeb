@@ -105,7 +105,7 @@ $Icon = [Ordered]@{
 foreach ($ico in @($icon.Keys)) {
     if ($icon[$ico] -as [uri] -and 
         $icon[$ico] -match '\.svg$') {
-        $icon[$ico] = (Invoke-RestMethod $icon[$ico]).svg.outerXml
+        $icon[$ico] = Invoke-RestMethod $icon[$ico]
     }
 }
 #endregion Cache Icons
@@ -252,6 +252,14 @@ $badges = @{
     )
     html = @(
         "<section class='badges'>"
+        if ($env:GITHUB_REPOSITORY) {
+            "<a href='https://github.com/$env:GITHUB_REPOSITORY'>"
+                if ($icon -and $icon.github.svg) {
+                    $icon['github'].svg.outerXml                  
+                }
+                'GitHub'
+            "</a>"
+        }
         if ($env:GITHUB_WORKFLOW_REF) {
             $actionsUrl = @($env:GITHUB_WORKFLOW_REF -split '@')[0] -replace
                 '\.github', 'actions' -replace '^', 'https://github.com/'
