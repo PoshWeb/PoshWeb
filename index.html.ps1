@@ -262,8 +262,7 @@ $badges = @{
             "<a href='https://github.com/$env:GITHUB_REPOSITORY'>"
                 if ($icon -and $icon.github.svg) {
                     $icon['github'].svg.outerXml                  
-                }
-                'GitHub'
+                }                
             "</a>"
         }
         if ($env:GITHUB_WORKFLOW_REF) {
