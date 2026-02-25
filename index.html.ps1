@@ -71,6 +71,30 @@ $AnalyticsID = $(
     }    
 ),
 
+[psobject[]]
+$Style = @(
+# CSS rules are just strings, so we can just write them inline.
+
+# Using a here-string helps:
+<# @'
+...
+'@ #>
+
+@'
+body { 
+    height: 100vh; 
+    max-width: 100vw; 
+    margin: 1em
+}
+
+header {
+    h1, h2, h3, h4 {
+        text-align: center;
+    }
+}
+'@
+),
+
 [Alias('Icons')]
 [Collections.IDictionary]
 $Icon = [Ordered]@{
@@ -213,6 +237,32 @@ $start = [DateTime]::UtcNow
 # We can make any single page application by combining controls.
 
 # You don't have to declare them in order, but it certainly helps.
+
+#region Badges
+$badges = @{
+    style = @(
+        '.badges {
+            posiition: fixed;
+            margin-top: 1em;
+            margin-right: 1em;
+            display: flex;
+            z-index: 10;
+        }
+        '
+    )
+    html = @(
+        "<section class='badges'>"
+        if ($env:GITHUB_WORKFLOW_REF) {
+            $actionsUrl = @($env:GITHUB_WORKFLOW_REF -split '@')[0] -replace
+                '\.github', 'actions'
+            "<a href='$actionsUrl'>"
+                "<img src='$actionsUrl/badge.svg'></img>"
+            "</a>"
+        }
+        "</section>"
+    )
+}
+#endregion Badges
 
 #region OrgInfo
 $ShowOrgInfo = @{
@@ -439,6 +489,7 @@ $ShowBuildTime = @{
 # Put all of the controls in the order we want them to appear
 $Controls = 
     @(
+        $badges
         $ShowOrgInfo        
         $selectPalette
         $GetRandomPalette
