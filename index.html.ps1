@@ -247,6 +247,8 @@ $badges = @{
             margin-right: 1em;
             display: flex;
             z-index: 10;
+            width: 25vw;
+            place-items: center;
         }
         '
     )
