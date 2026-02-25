@@ -254,7 +254,7 @@ $badges = @{
         "<section class='badges'>"
         if ($env:GITHUB_WORKFLOW_REF) {
             $actionsUrl = @($env:GITHUB_WORKFLOW_REF -split '@')[0] -replace
-                '\.github', 'actions'
+                '\.github', 'actions' -replace '^', 'https://github.com/'
             "<a href='$actionsUrl'>"
                 "<img src='$actionsUrl/badge.svg'></img>"
             "</a>"
