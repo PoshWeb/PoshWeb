@@ -122,8 +122,7 @@ if (-not $script:orgInfo) {
 }
 
 if (-not $script:orgProjects) {
-    $script:OrgProjects = Invoke-RestMethod -Uri "https://api.github.com/orgs/$Organization/repos?per_page=100" |
-        Where-Object Name -notmatch '^.github'
+    $script:OrgProjects = . ./xrpc/com.github.api.orgs.org.repos.ps1
 }
 
 if (-not $script:paletteList) {
