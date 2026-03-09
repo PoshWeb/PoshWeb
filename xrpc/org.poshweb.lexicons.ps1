@@ -4,9 +4,9 @@
 .DESCRIPTION
     Gets the lexicons supported by this server.
 .NOTES
-    In this server's case, all lexicon contents are static.    
-    
-    An index surfaces data at an endpoint.
+    In this server's case, all lexicon contents are dynamic static.
+
+    Each time the site is built, the lexicons will be refreshed.
 #>
 [OutputType('{
     "type": "object",
