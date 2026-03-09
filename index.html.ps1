@@ -118,7 +118,7 @@ foreach ($ico in @($icon.Keys)) {
 # we want to collect all RESTful information first.
 
 if (-not $script:orgInfo) {
-    $script:orgInfo = Invoke-RestMethod -Uri "https://api.github.com/orgs/$Organization"
+    $script:orgInfo = . ./xrpc/com.github.api.orgs.org.ps1
 }
 
 if (-not $script:orgProjects) {
@@ -209,7 +209,6 @@ $script:OrgProjects |
 #endregion Collect Information
 Push-Location $PSScriptRoot
 
-
 #region Clock Speed
 $cpuSpeed = 
     if ($executionContext.SessionState.PSVariable.Get('IsLinux').Value) {
@@ -249,9 +248,6 @@ $badges = @{
             z-index: 10;
             width: 25vw;
             place-items: center;
-            a {
-                vertical-align: center;
-            }
         }
         
         '
@@ -513,37 +509,6 @@ $Controls =
     )    
 
 #endregion Define Controls
-
-
-# Create the base style for the page
-$style = @(
-
-# CSS rules are just strings, so we can just write them inline.
-
-# Using a here-string helps:
-<# @'
-...
-'@ #>
-
-@'
-
-body { 
-    height: 100vh; 
-    max-width: 100vw; 
-    margin: 1em
-}
-
-header {
-    h1, h2, h3, h4 {
-        text-align: center;
-    }
-}
-
-
-'@
-
-)
-
 
 # To create the index (or any page, all we need to do is join parts together)
 
