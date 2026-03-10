@@ -9,8 +9,7 @@ param(
 [string[]]
 $StargazerCacheUrl = @(
     "https://poshweb.org/xrpc/org.poshweb.stargazers",
-    "https://poshweb.org/PoshWeb.stargazers.json"
-    
+    "https://poshweb.org/PoshWeb.stargazers.json"    
 )
 )
 
@@ -24,7 +23,10 @@ $stargazersCache = foreach ($stargazerUrl in $StargazerCacheUrl) {
     }
 }
 
-$stargazers = [Ordered]@{}
+$stargazers = [Ordered]@{
+    PSTypeName='org.poshweb.stargazers'
+    '$type' = 'org.poshweb.stargazers'
+}
 foreach ($property in $stargazersCache.psobject.properties) {    
     $stargazers[$property.Name] = @($property.Value)
 }
@@ -60,10 +62,7 @@ foreach ($repoInfo in $orgRepos) {
     }
 }
 
-[PSCustomObject]([Ordered]@{
-    PSTypeName='org.poshweb.stargazers'
-    '$type' = 'org.poshweb.stargazers'
-} + $stargazers)
+[PSCustomObject]$stargazers
 
 if ($psScriptRoot) { Pop-Location } 
 
