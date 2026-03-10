@@ -18,6 +18,7 @@ if ($psScriptRoot) { Push-Location $psScriptRoot }
 $stargazersCache = foreach ($stargazerUrl in $StargazerCacheUrl) {
     try {
         Invoke-RestMethod $stargazerUrl -ErrorAction Stop
+        break
     } catch {
         continue
     }
@@ -27,7 +28,9 @@ $stargazers = [Ordered]@{
     PSTypeName='org.poshweb.stargazers'
     '$type' = 'org.poshweb.stargazers'
 }
-foreach ($property in $stargazersCache.psobject.properties) {    
+
+foreach ($property in $stargazersCache.psobject.properties) {
+    if ($property.Name -eq '$type') { continue }
     $stargazers[$property.Name] = @($property.Value)
 }
 
