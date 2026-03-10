@@ -24,10 +24,7 @@ param()
 
 if ($PSScriptRoot) { Push-Location $psScriptRoot }
 
-$indexDataTypes = [string], [bool], [int], [datetime], [float], [double], [timespan]
 $xrpcData = [Ordered]@{}
-
-$xrpcDb = [Data.DataSet]::new()
 
 foreach ($xrpcIndexFile in 
     Get-ChildItem -Path $psScriptRoot -Filter xrpc | 
@@ -48,41 +45,6 @@ foreach ($xrpcIndexFile in
     ) -Force
     
     $xrpcData[$xrpcNsid] = $xrpcOutput
-
-    foreach ($xrpcObject in $xrpcOutput) {
-        $xrpcType = $xrpcObject.'$type'
-        if (-not $xrpcType) { continue }
-        if (-not $xrpcdb.Tables[$xrpcType]) {
-            $xrpcTable = $xrpcdb.Tables.Add($xrpcType)            
-            $xrpcTable.Columns.AddRange(@(
-                [Data.DataColumn]::new('record', [object], '', 'Hidden')
-            ))
-        }
-
-        $newRow = $xrpcdb.Tables[$xrpcType].NewRow()
-        $newRow.Record = $xrpcObject
-
-        foreach ($property in $xrpcObject.psobject.properties) {
-            if (-not $property.value.getType) { continue }
-            $propertyType = $property.value.GetType()
-            if ($propertyType -in $indexDataTypes) {
-                if (-not $xrpcdb.Tables[$xrpcType].Columns[$property.Name]) {
-                    $xrpcdb.Tables[$xrpcType].Columns.AddRange(@(
-                        [Data.DataColumn]::new($property.name, $propertyType, '', 'Attribute')
-                    ))
-                }
-            }  else {
-                if (-not $xrpcdb.Tables[$xrpcType].Columns[$property.Name]) {
-                    $xrpcdb.Tables[$xrpcType].Columns.AddRange(@(
-                        [Data.DataColumn]::new($property.name, [object], '', 'Hidden')
-                    ))
-                }
-            }
-            $newRow.($property.Name) = $property.Value            
-        }
-
-        $xrpcdb.Tables[$xrpcType].Rows.Add($newRow)
-    }
 }
 
 # All we need to do is run one file and redirect it's output:
