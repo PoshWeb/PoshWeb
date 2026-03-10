@@ -30,7 +30,5 @@ if (-not $script:Cache[$projectsUrl]) {
         Where-Object Name -notmatch '^.github'
 }
 
-$script:orgInfo = $script:Cache[$projectsUrl]
-
-$script:orgInfo |
+$script:Cache[$projectsUrl] |
     Add-Member NoteProperty '$type' 'com.github.api.org.repo' -Force -PassThru
