@@ -79,16 +79,15 @@ Get-Item -Path ./index.html
 $gitHubWorkflows = Get-ChildItem -Path .github -Force | 
     Where-Object Name -EQ workflows
 
-# and if we have a `./.github/workflows` directory
+# and if we had any workflows
 if ($gitHubWorkflows) {
-    # make a `./workflows` directory.
+    # make a ./workflows directory 
     if (-not (Test-Path './workflows')) {
         New-Item -ItemType Directory -Path ./workflows -Force
     }
-    # Then get the workflow files
-    $gitHubWorkflows | Get-ChildItem |
-        # and put them in the right place.
-        Copy-Item -Destination ./workflows/ -PassThru -Force
+    # and copy the workflows to the right place.
+    $gitHubWorkflows |Get-ChildItem |
+        Copy-Item -Destination ./workflows -PassThru
 }
 
 if ($PSScriptRoot) { Pop-Location }
