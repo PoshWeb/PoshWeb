@@ -85,8 +85,9 @@ if ($gitHubWorkflows) {
     if (-not (Test-Path './workflows')) {
         New-Item -ItemType Directory -Path ./workflows -Force
     }
-    # Then get the workflows
-    $gitHubWorkflows | Get-ChildItem | # and copy them to `./workflows/
+    # Then get the workflow files
+    $gitHubWorkflows | Get-ChildItem |
+        # and put them in the right place.
         Copy-Item -Destination ./workflows/ -PassThru -Force
 }
 
