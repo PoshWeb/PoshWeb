@@ -27,9 +27,39 @@ param()
 # Make sure we're in the current location
 if ($PSScriptRoot) { Push-Location $psScriptRoot }
 
-# We'll cache our xrpc data first
-# Fun fact: this becomes our site data.
+# Declare a simple dictionary to store site data
 $site = [Ordered]@{}
+
+#region Clock Speed
+
+# First, let's get the clock speed.
+# Most sites won't need to know this,
+# but part of the point of _this_ site is the speed of deployment.
+
+$cpuSpeed = 
+    if ($executionContext.SessionState.PSVariable.Get('IsLinux').Value) {
+        Get-Content /proc/cpuinfo -Raw -ErrorAction SilentlyContinue | 
+            Select-String "(?<Unit>Mhz|MIPS)\s+\:\s+(?<Value>[\d\.]+)" | 
+            Select-Object -First 1 -ExpandProperty Matches |
+            ForEach-Object {
+                $_.Groups["Value"].Value -as [int]
+            }
+    } elseif ($executionContext.SessionState.PSVariable.Get('IsMacOS').Value) {
+        (sysctl -n hw.cpufrequency) / 1e6 -as [int]
+    } else {
+        $getCimInstance = $ExecutionContext.SessionState.InvokeCommand.GetCommand('Get-CimInstance','Cmdlet')
+        if ($getCimInstance) {
+            & $getCimInstance -Class Win32_Processor |
+                Select-Object -ExpandProperty MaxClockSpeed
+        }
+    }
+#endregion Clock Speed
+
+#region index data in `/xrpc/`
+
+# We want to run any script in `/xrpc/`.
+
+# Fun fact: this becomes our site data.
 
 # We'll call each script that generates xrpc an "indexer"
 # (because it generates an index of the content)
@@ -68,9 +98,9 @@ foreach ($xrpcIndexFile in
     $site[$xrpcNsid] = $xrpcOutput
 }
 
-# All we need to do is run one file and redirect it's output:
-. ./index.html.ps1 > ./index.html
-Get-Item -Path ./index.html
+#endregion index data in `/xrpc/`
+
+#region Copy GitHub workflows to `/workflows`
 
 # This site is a useful living example of how to make sites free of frameworks
 # So let's make any workflows we use to build it available on the page.
@@ -89,5 +119,12 @@ if ($gitHubWorkflows) {
     $gitHubWorkflows |Get-ChildItem |
         Copy-Item -Destination ./workflows -PassThru
 }
+
+#endregion Copy GitHub workflows to `/workflows`
+
+# Build our index:
+. ./index.html.ps1 > ./index.html
+# and get the file
+Get-Item -Path ./index.html
 
 if ($PSScriptRoot) { Pop-Location }

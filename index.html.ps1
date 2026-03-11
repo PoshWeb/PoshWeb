@@ -117,13 +117,22 @@ foreach ($ico in @($icon.Keys)) {
 # To get an accurate sense of timing the build itself, 
 # we want to collect all RESTful information first.
 
-if (-not $script:orgInfo) {
-    $script:orgInfo = . ./xrpc/com.github.api.orgs.org.ps1
+if (-not $site) {
+    $site = [Ordered]@{}    
 }
 
-if (-not $script:orgProjects) {
-    $script:OrgProjects = . ./xrpc/com.github.api.orgs.org.repos.ps1
+foreach ($nsid in @(
+    'com.github.api.orgs.org'
+    'com.github.api.orgs.org.repos'
+    'org.poshweb.stargazers'
+)) {
+    if (-not $site[$nsid]) {
+        $site[$nsid] = . "./xrpc/$nsid.ps1"
+    }    
 }
+
+$script:orgInfo = $site['com.github.api.orgs.org']
+$script:OrgProjects = $site['com.github.api.orgs.org.repos']
 
 if (-not $script:paletteList) {
     $script:paletteList = Invoke-RestMethod -Uri $PaletteListSource
@@ -135,17 +144,8 @@ $script:orgInfo |
 $script:OrgProjects | 
     ConvertTo-Json -Depth 5 > "./$($orgInfo.name).projects.json"
 
-$countUrl = "$($PageUrl -replace '/$')/$($orgInfo.name).counts.json"
-
-$previousCounts = try {
-    Invoke-RestMethod -Uri $countUrl -ErrorAction Stop
-} catch {
-    Write-Warning "Could not get $countUrl : $_"
-}
-
-
 # Create a table to store stargazers
-$stargazers = . ./xrpc/org.poshweb.stargazers.ps1
+$stargazers = $site['org.poshweb.stargazers']
 
 $script:OrgProjects | 
     Select-Object name, *count | 
@@ -154,26 +154,6 @@ $script:OrgProjects |
 
 #endregion Collect Information
 Push-Location $PSScriptRoot
-
-#region Clock Speed
-$cpuSpeed = 
-    if ($executionContext.SessionState.PSVariable.Get('IsLinux').Value) {
-        Get-Content /proc/cpuinfo -Raw -ErrorAction SilentlyContinue | 
-            Select-String "(?<Unit>Mhz|MIPS)\s+\:\s+(?<Value>[\d\.]+)" | 
-            Select-Object -First 1 -ExpandProperty Matches |
-            ForEach-Object {
-                $_.Groups["Value"].Value -as [int]
-            }
-    } elseif ($executionContext.SessionState.PSVariable.Get('IsMacOS').Value) {
-        (sysctl -n hw.cpufrequency) / 1e6 -as [int]
-    } else {
-        $getCimInstance = $ExecutionContext.SessionState.InvokeCommand.GetCommand('Get-CimInstance','Cmdlet')
-        if ($getCimInstance) {
-            & $getCimInstance -Class Win32_Processor |
-                Select-Object -ExpandProperty MaxClockSpeed
-        }
-    }
-#endregion Clock Speed
 
 $start = [DateTime]::UtcNow
 
