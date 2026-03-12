@@ -98,6 +98,10 @@ if (-not $PowerShellGalleryConditions -and -not $PowerShellGalleryPackageNames) 
 $myOutputSchema = $MyInvocation.MyCommand.OutputType -match '^{' | ConvertFrom-Json
 $myOutputProperties = $myOutputSchema.properties.psobject.properties.name
 
+if (-not $script:Cache) {
+    $script:Cache = [Ordered]@{}
+}
+
 $moduleList =  @(
     if ($PowerShellGalleryConditions) {
         $fullUrl = (
@@ -106,16 +110,12 @@ $moduleList =  @(
                     $PowerShellGalleryConditions -join ' or '
                 ))" +
                 "&`$skip=$PowerShellGallerySkip&`$top=100&`$orderby=LastUpdated desc"
-        )
+        )        
 
-        if (-not $script:MyModuleGalleryInfoCache) {
-            $script:MyModuleGalleryInfoCache = [Ordered]@{}
+        if (-not $script:Cache[$fullUrl]) {
+            $script:Cache[$fullUrl] = Invoke-RestMethod $fullUrl
         }
-
-        if (-not $script:MyModuleGalleryInfoCache[$fullUrl]) {
-            $script:MyModuleGalleryInfoCache[$fullUrl] = Invoke-RestMethod $fullUrl
-        }
-        $script:MyModuleGalleryInfoCache[$fullUrl]
+        $script:Cache[$fullUrl]
     }
 
     if ($PowerShellGalleryPackageNames) {
@@ -123,10 +123,10 @@ $moduleList =  @(
             $galleryUrl = "https://www.powershellgallery.com/api/v2/FindPackagesById()?id='$(
                 [Web.HttpUtility]::UrlEncode($packageName) -replace '\+', '%20'
             )'"
-            if (-not $script:MyModuleGalleryInfoCache[$galleryUrl]) {
-                $script:MyModuleGalleryInfoCache[$galleryUrl] = Invoke-RestMethod $galleryUrl
+            if (-not $script:Cache[$galleryUrl]) {
+                $script:Cache[$galleryUrl] = Invoke-RestMethod $galleryUrl
             }
-            $script:MyModuleGalleryInfoCache[$galleryUrl]   
+            $script:Cache[$galleryUrl]   
         }
     }
 )
