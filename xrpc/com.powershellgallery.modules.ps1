@@ -122,7 +122,7 @@ $moduleList =  @(
         foreach ($packageName in $PowerShellGalleryPackageNames) {
             $galleryUrl = "https://www.powershellgallery.com/api/v2/FindPackagesById()?id='$(
                 [Web.HttpUtility]::UrlEncode($packageName) -replace '\+', '%20'
-            )'"            
+            )'&`$top=1"
             if (-not $script:Cache[$galleryUrl]) {
                 Write-Verbose -Verbose "Getting Gallery Data $galleryUrl"
                 $script:Cache[$galleryUrl] = try {
@@ -132,7 +132,8 @@ $moduleList =  @(
                 }
             }
 
-            if ($script:Cache[$galleryUrl].properties.id -ne $packageName) {
+            if ($packageName -ne $script:Cache[$galleryUrl].properties.id) {
+                Write-Verbose -Verbose "Skipping $packageName"
                 continue
             }
             $script:Cache[$galleryUrl]
