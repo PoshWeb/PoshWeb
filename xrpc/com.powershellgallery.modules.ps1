@@ -122,11 +122,20 @@ $moduleList =  @(
         foreach ($packageName in $PowerShellGalleryPackageNames) {
             $galleryUrl = "https://www.powershellgallery.com/api/v2/FindPackagesById()?id='$(
                 [Web.HttpUtility]::UrlEncode($packageName) -replace '\+', '%20'
-            )'"
+            )'"            
             if (-not $script:Cache[$galleryUrl]) {
-                $script:Cache[$galleryUrl] = Invoke-RestMethod $galleryUrl
+                Write-Verbose -Verbose "Getting Gallery Data $galleryUrl"
+                $script:Cache[$galleryUrl] = try {
+                    Invoke-RestMethod $galleryUrl
+                } catch {
+                    $_
+                }
             }
-            $script:Cache[$galleryUrl]   
+
+            if ($script:Cache[$galleryUrl].properties.id -ne $packageName) {
+                continue
+            }
+            $script:Cache[$galleryUrl]
         }
     }
 )
