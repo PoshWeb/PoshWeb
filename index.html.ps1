@@ -92,9 +92,7 @@ header {
         text-align: center;
     }
     svg {
-        margin-left: auto;
-        margin-right: auto;
-        width: 33%;
+        width: 25%;
     }
 }
 '@
@@ -218,7 +216,7 @@ $ShowOrgInfo = @{
         } elseif (Test-Path "./$Organization.svg") {
             "<h3>$(Get-Content -Raw "./$organization.svg")</h3>"
         }
-                
+
         "</header>"
     )
 }
