@@ -91,6 +91,9 @@ header {
     h1, h2, h3, h4 {
         text-align: center;
     }
+    svg {
+        width: 33%;
+    }
 }
 '@
 ),
@@ -200,12 +203,7 @@ $badges = @{
 #endregion Badges
 
 #region OrgInfo
-$ShowOrgInfo = @{
-    style = "
-    header svg {
-        max-width: 33%;
-    }
-    "
+$ShowOrgInfo = @{    
     html = @(
         "<header>"
         "<h1>$([Web.HttpUtility]::HtmlEncode($Organization))</h1>"
