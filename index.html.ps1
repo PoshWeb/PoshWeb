@@ -201,9 +201,19 @@ $badges = @{
 
 #region OrgInfo
 $ShowOrgInfo = @{
+    style = "
+    header svg {
+        max-width: 33%;
+    }
+    "
     html = @(
         "<header>"
         "<h1>$([Web.HttpUtility]::HtmlEncode($Organization))</h1>"
+        if (Test-Path "./$organization-animated.svg") {
+            Get-Content -Raw "./$organization-animated.svg"
+        } elseif (Test-Path "./$Organization.svg") {
+            Get-Content -Raw "./$organization.svg"            
+        }
         if ($orgInfo.description) {
             "<h2>$([Web.HttpUtility]::HtmlEncode($orgInfo.description))</h2>"    
         }
@@ -471,6 +481,12 @@ $index = @(
     }    
     if ($orgInfo.avatar_url) {
         "<meta property='og:image' content='$($orgInfo.avatar_url)' />"
+    }
+
+    if (Test-Path "./$organization-animated.svg") {
+        "<link rel='icon' href='$Organization-animated.svg' type='image/svg+xml' sizes='any' />"
+    } elseif (Test-Path "./$Organization.svg") {
+        "<link rel='icon' href='$Organization.svg' type='image/svg+xml' sizes='any' />"
     }
         
     if ($DefaultPalette) {
