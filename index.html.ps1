@@ -92,7 +92,7 @@ header {
         text-align: center;
     }
     svg {
-        width: 25%;
+        width: 10%;
     }
 }
 '@
