@@ -92,6 +92,7 @@ header {
         text-align: center;
     }
     svg {
+        text-align: center;
         width: 33%;
     }
 }
