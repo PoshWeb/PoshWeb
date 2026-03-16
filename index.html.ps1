@@ -208,15 +208,17 @@ $badges = @{
 $ShowOrgInfo = @{    
     html = @(
         "<header>"
-        "<h1>$([Web.HttpUtility]::HtmlEncode($Organization))</h1>"
-        if (Test-Path "./$organization-animated.svg") {
-            Get-Content -Raw "./$organization-animated.svg"
-        } elseif (Test-Path "./$Organization.svg") {
-            Get-Content -Raw "./$organization.svg"            
-        }
+        "<h1>$([Web.HttpUtility]::HtmlEncode($Organization))</h1>"        
         if ($orgInfo.description) {
             "<h2>$([Web.HttpUtility]::HtmlEncode($orgInfo.description))</h2>"    
         }
+        
+        if (Test-Path "./$organization-animated.svg") {
+            "<h3>$(Get-Content -Raw "./$organization-animated.svg")</h3>"
+        } elseif (Test-Path "./$Organization.svg") {
+            "<h3>$(Get-Content -Raw "./$organization.svg")</h3>"
+        }
+                
         "</header>"
     )
 }
