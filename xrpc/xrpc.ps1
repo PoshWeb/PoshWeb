@@ -44,8 +44,24 @@ $xrpcFiles = foreach ($xrpcIndexFile in
     $site[$xrpcNsid] = $xrpcOutput
 }
 
-"<ul>"
-foreach ($xrpcNsid in $nsidList) {
-    "<li><a href='/xrpc/$xrpcNsid'>$xrpcNsid</a></li>"
-}
-"</ul>"
+
+
+@"
+# xrpc
+
+This website supports [xrpc](https://atproto.com/specs/xrpc).
+
+Some of the data that drives this website is freely available with an easy lexical json api.
+
+The following lexicons are supported:
+
+$(
+    @(
+        foreach ($xrpcNsid in $nsidList) {
+            "* [$xrpcNsid](/xrpc/$xrpcNsid)"
+        }
+    ) -join [Environment]::NewLine
+)
+"@ |
+    ConvertFrom-Markdown |
+        Select-Object -ExpandProperty Html
