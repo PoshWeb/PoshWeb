@@ -55,24 +55,37 @@ $cpuSpeed =
     }
 #endregion Clock Speed
 
-#region index data in `/xrpc/`
-$xrpcFile = (
-    Join-Path $PSScriptRoot 'xrpc' | 
-        Join-Path -ChildPath xrpc.ps1
-)
+#region eponyms
 
+# To make things relatively easy, we'll treat eponym scripts as an index
+# For example, if there's a directory called `/xrpc`, `/xrpc.ps1` should
+# generate any content in that directory, and return html.
 
-if (Test-Path $xrpcFile) {
-    $xrpcDestination = 
-        Join-Path $PSScriptRoot 'xrpc' | 
-            Join-Path -ChildPath 'index.html'
-    . $xrpcFile > $xrpcDestination
-    Get-Item $xrpcDestination
+# We will go thru paths in reverse alphabetical format. 
+
+$eponyms =
+    @(foreach (
+        $directory in Get-ChildItem -Directory -Recurse |
+            Sort-Object FullName -Descending
+    ) {
+        $eponymPath = Join-Path $directory.FullName "$($directory.Name).ps1"
+        if (Test-Path $eponymPath) {
+            $ExecutionContext.SessionState.InvokeCommand.GetCommand(
+                $eponymPath, 'ExternalScript'
+            )
+        }
+    })
+
+foreach ($eponym in $eponyms) {
+    $eponymFile =
+        $eponym.Source -replace
+            "$([Regex]::Escape($eponym.Name))$",
+                "index.html"
+
+    . $eponym > $eponymFile
+    Get-Item -Path $eponymFile
 }
-
-$org = $site['com.github.api.orgs.org']
-
-#endregion index data in `/xrpc/`
+#endregion run eponyms
 
 #region Copy GitHub workflows to `/workflows`
 
