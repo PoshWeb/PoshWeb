@@ -60,10 +60,14 @@ $xrpcFile = (
     Join-Path $PSScriptRoot 'xrpc' | 
         Join-Path -ChildPath xrpc.ps1
 )
+
+
 if (Test-Path $xrpcFile) {
-    . $xrpcFile > (
-        $xrpcFile -replace '[\\/]xrpc.ps1$', 'index.html'
-    )
+    $xrpcDestination = 
+        Join-Path $PSScriptRoot 'xrpc' | 
+            Join-Path -ChildPath 'index.html'
+    . $xrpcFile > $xrpcDestination
+    Get-Item $xrpcDestination
 }
 
 $org = $site['com.github.api.orgs.org']
