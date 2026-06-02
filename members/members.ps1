@@ -8,7 +8,13 @@ if (-not $site['com.github.api.orgs.org.publicMembers']) {
 "<style>"
 "
 .member-grid {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2.5em; margin: 2.5em
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2.5em; margin: 2.5em    
+}
+
+.member-grid img {
+    width: 100%;
+}
+.member-grid h3 {
     text-align: center;
 }
 "
